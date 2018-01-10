@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class TP3 {
+public class Main {
   public static class TP3Mapper
        extends Mapper<Object, Text, Text, IntWritable>{
 	  public void map(Object key, Text value, Context context
@@ -31,7 +31,7 @@ public class TP3 {
     Configuration conf = new Configuration();
     Job job = Job.getInstance(conf, "TP3");
     job.setNumReduceTasks(1);
-    job.setJarByClass(TP3.class);
+    job.setJarByClass(Main.class);
     job.setMapperClass(TP3Mapper.class);
     job.setMapOutputKeyClass(Text.class);
     job.setMapOutputValueClass(IntWritable.class);
