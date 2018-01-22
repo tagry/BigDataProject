@@ -2,6 +2,7 @@ import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.spark.SparkConf;
@@ -23,10 +24,18 @@ public class Main {
 		// rdd = context.parallelize(Arrays.asList(1, 2, 8, 7, 2),10);
 
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
-				.binaryFiles("/dem3_raw/N00E033.hgt");
+				.binaryFiles("/dem3_raw/N00E006.hgt");
+		
+		System.out.println("<<<<<<<<<<<<< count rdd : " + rddFiles.count());
 
+		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<< avant >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		JavaRDD<Map<String, Long>> rddHgtData = rddFiles
 				.map((tuple) -> hgtConvertToClass(tuple._1, tuple._2));
+		System.out.println("<<<<<<<<<<<<< count rdd : " + rddHgtData.count());
+		List<Map<String, Long>> liste = rddHgtData.collect();
+		System.out.println("<<<<<<<<<<<<< taille liste : " + liste.size());
+		System.out.println("<<<<<<<<<<<<< taille map : " + liste.get(0).size());
+		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<< apres >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
 		Map<String, Long> result = rddHgtData.reduce((Map<String, Long> m1,
 				Map<String, Long> m2) -> reduceMap(m1, m2));
@@ -57,8 +66,10 @@ public class Main {
 
 	public static Map<String, Long> hgtConvertToClass(String filePath,
 			PortableDataStream file) {
+		filePath = filePath.substring(filePath.length() - 11);
+		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<< debut fonction >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-		Map<String, Long> mapPixels = new HashMap();
+		Map<String, Long> mapPixels = new HashMap<String, Long>();
 
 		DataInputStream data = file.open();
 
@@ -67,13 +78,13 @@ public class Main {
 		 */
 		long zoom = 1;
 
-		System.out.println(">>>>>>>>>>>>>>>>> FILE PATH : " + filePath);
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FILE PATH : " + filePath);
 
-		String NS = filePath.substring(29, 30);
-		String WE = filePath.substring(32, 33);
+		String NS = filePath.substring(0, 1);
+		String WE = filePath.substring(3, 4);
 
-		long latitude = Integer.parseInt(filePath.substring(30, 32));
-		long longitude = Integer.parseInt(filePath.substring(33, 36));
+		long latitude = Integer.parseInt(filePath.substring(1, 3));
+		long longitude = Integer.parseInt(filePath.substring(4, 7));
 
 		if (NS.equals("N"))
 			latitude = 90 - latitude;
@@ -123,7 +134,7 @@ public class Main {
 
 	private static boolean checkSuperior(Map<String, Long> map, String coord,
 			long altitude) {
-		return map.containsKey(coord) && map.get(coord) < altitude;
+		return !map.containsKey(coord) || map.containsKey(coord) && map.get(coord) < altitude;
 	}
 
 	private static String getPixelKey(long latitude, long longitude,
