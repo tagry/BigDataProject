@@ -1,8 +1,10 @@
+import org.apache.spark.api.java.JavaRDD;
+
 
 public class HgtData {
 	int latitude;
 	int longitude;
-	int[][] height;
+	JavaPairRDD<Tuple>
 	
 	public HgtData(int latitude, int longitude, int[][] height){
 		this.latitude = latitude;
