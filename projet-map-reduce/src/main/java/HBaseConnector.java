@@ -19,6 +19,8 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
+import scala.reflect.api.Trees.IfApi;
+
 public class HBaseConnector {
 	private static Configuration conf = null;
 	/**
@@ -138,6 +140,20 @@ public class HBaseConnector {
 			System.out.println(new String(kv.getValue()));
 		}
 		return map;
+	}
+
+	public static void initHBase(String tableName, String[] familys, long zoom) {
+		try {
+			HBaseAdmin admin = new HBaseAdmin(conf);
+			if (!admin.tableExists(tableName))
+				createTable(tableName, familys);
+
+			delZoomRow(tableName, new String(zoom + ""));
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/*

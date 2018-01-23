@@ -20,7 +20,7 @@ public class Main {
 		SparkConf conf = new SparkConf().setAppName("TP Spark");
 		JavaSparkContext context = new JavaSparkContext(conf);
 
-		long zoom = 1;
+		long zoom = 0;
 		if (args.length == 1) {
 			zoom = Integer.parseInt(args[0]);
 		}
@@ -135,18 +135,41 @@ public class Main {
 
 	private static String getPixelKey(long latitude, long longitude,
 			long coordX, long coordY, long zoom) {
-		long step = 180 * 1201 / (zoom * 1024);
+		long nbFilesBySide = (long) Math.pow(2, zoom);
+
+		long step = 180 * 1201 / (nbFilesBySide * 1024);
 		long coordPixelX = (longitude * 1201 + coordX) / (step * 2);
 		long coordPixelY = ((latitude - 1) * 1201 + coordY) / step;
 
 		return coordPixelX + "-" + coordPixelY;
 	}
 
+	private static String[] generateFamilies(int maxZoom) {
+		int maxFilesBySide = (int) Math.pow(2, maxZoom);
+
+		String[] result = new String[maxFilesBySide * maxFilesBySide];
+
+		int c = 0;
+
+		for (int i = 0; i < maxFilesBySide; i++)
+			for (int j = 0; j < maxFilesBySide; j++) {
+				result[c] = i + "-" + j;
+				c++;
+			}
+		return result;
+
+	}
+
 	private static void storeMap(Map<String, Long> map, long zoom) {
+		String tableName = "magrondin_lhing_tagry";
+		int maxZoom = 5;
+
+		HBaseConnector.initHBase(tableName, generateFamilies(maxZoom), zoom);
+
 		Map<String, Map<String, Long>> mapSplit = splitMap(map, zoom);
 
-		mapSplit.forEach((k, v) -> HBaseConnector.addMap(
-				"magrondin_lhing_tagry", new String("" + zoom), k, v));
+		mapSplit.forEach((k, v) -> HBaseConnector.addMap(tableName, new String(
+				"" + zoom), k, v));
 	}
 
 	private static Map<String, Map<String, Long>> splitMap(
