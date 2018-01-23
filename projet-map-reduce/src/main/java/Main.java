@@ -19,9 +19,15 @@ public class Main {
 
 		SparkConf conf = new SparkConf().setAppName("TP Spark");
 		JavaSparkContext context = new JavaSparkContext(conf);
+		
 
-		// JavaRDD<Integer> rdd;
-		// rdd = context.parallelize(Arrays.asList(1, 2, 8, 7, 2),10);
+		long zoom = 1;
+		if(args.length == 1){
+			zoom = Integer.parseInt(args[0]);
+		}
+		
+		final long ZOOM = new Long(zoom);
+		
 
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
 				.binaryFiles("/dem3_raw/N00E006.hgt");
@@ -30,7 +36,7 @@ public class Main {
 
 		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<< avant >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		JavaRDD<Map<String, Long>> rddHgtData = rddFiles
-				.map((tuple) -> hgtConvertToClass(tuple._1, tuple._2));
+				.map((tuple) -> hgtConvertToClass(tuple._1, tuple._2, ZOOM));
 		System.out.println("<<<<<<<<<<<<< count rdd : " + rddHgtData.count());
 		List<Map<String, Long>> liste = rddHgtData.collect();
 		System.out.println("<<<<<<<<<<<<< taille liste : " + liste.size());
@@ -43,13 +49,7 @@ public class Main {
 		System.out.println("<<<"+ result.size()+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
 		result.forEach((key, value)-> System.out.println(key + " " + value));
 		
-
-		// JavaPairRDD<Tuple2IntIntSerializer, Integer> rddPixelKey =
-		// rddHgtData.keyBy(data -> generateKey(data));
-
-//		JavaRDD<String> rddToString = rddHgtData.map(data -> data.toString());
-//		rddToString
-//				.saveAsTextFile("/user/lhing/aaaaaaaaaaaaaaaaaaaaaaa0000000000000000");
+		
 
 	}
 
@@ -65,21 +65,13 @@ public class Main {
 	}
 
 	public static Map<String, Long> hgtConvertToClass(String filePath,
-			PortableDataStream file) {
+			PortableDataStream file, long zoom) {
 		filePath = filePath.substring(filePath.length() - 11);
-		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<< debut fonction >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
 		Map<String, Long> mapPixels = new HashMap<String, Long>();
 
 		DataInputStream data = file.open();
-
-		/**
-		 * TODO pass zoom in parameter
-		 */
-		long zoom = 1;
-
-		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FILE PATH : " + filePath);
-
+	
 		String NS = filePath.substring(0, 1);
 		String WE = filePath.substring(3, 4);
 
@@ -101,17 +93,16 @@ public class Main {
 			// Pixel's coordinates
 			Tuple2LongLongSerializer key;
 
-			char[] buf = new char[2];
+			byte[] buf = new byte[2];
 
 			for (int i = 0; i < 1201; i++) {
 				for (int j = 0; j < 1201; j++) {
-					buf[0] = data.readChar();
-					buf[1] = data.readChar();
+					buf[0] = data.readByte();
+					buf[1] = data.readByte();
 
 					long altitude = (buf[0] << 8) | buf[1];
 
-					String pixelKey = getPixelKey(latitude, longitude, j, i,
-							zoom);
+					String pixelKey = getPixelKey(latitude, longitude, j, i, zoom);
 
 					if (checkSuperior(mapPixels, pixelKey, altitude))
 						mapPixels.put(pixelKey, altitude);
