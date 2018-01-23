@@ -6,6 +6,15 @@
 	<version>0.0.1</version>
 	<name>TPSpark</name>
 	<dependencies>
+
+
+		<dependency>
+			<groupId>org.apache.hbase</groupId>
+			<artifactId>hbase-client</artifactId>
+			<version>1.2.4</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_2.10</artifactId>

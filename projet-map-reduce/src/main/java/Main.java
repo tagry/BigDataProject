@@ -22,52 +22,60 @@ public class Main {
 
 		// JavaRDD<Integer> rdd;
 		// rdd = context.parallelize(Arrays.asList(1, 2, 8, 7, 2),10);
+		
+	
 
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
 				.binaryFiles("/dem3_raw/N00E006.hgt");
-		
+
 		System.out.println("<<<<<<<<<<<<< count rdd : " + rddFiles.count());
 
-		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<< avant >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		System.out
+				.println("<<<<<<<<<<<<<<<<<<<<<<<< avant >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		JavaRDD<Map<String, Long>> rddHgtData = rddFiles
 				.map((tuple) -> hgtConvertToClass(tuple._1, tuple._2));
 		System.out.println("<<<<<<<<<<<<< count rdd : " + rddHgtData.count());
 		List<Map<String, Long>> liste = rddHgtData.collect();
 		System.out.println("<<<<<<<<<<<<< taille liste : " + liste.size());
 		System.out.println("<<<<<<<<<<<<< taille map : " + liste.get(0).size());
-		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<< apres >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		System.out
+				.println("<<<<<<<<<<<<<<<<<<<<<<<<< apres >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
 		Map<String, Long> result = rddHgtData.reduce((Map<String, Long> m1,
 				Map<String, Long> m2) -> reduceMap(m1, m2));
-		
-		System.out.println("<<<"+ result.size()+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-		result.forEach((key, value)-> System.out.println(key + " " + value));
-		
+
+		System.out
+				.println("<<<"
+						+ result.size()
+						+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+		result.forEach((key, value) -> System.out.println(key + " " + value));
 
 		// JavaPairRDD<Tuple2IntIntSerializer, Integer> rddPixelKey =
 		// rddHgtData.keyBy(data -> generateKey(data));
 
-//		JavaRDD<String> rddToString = rddHgtData.map(data -> data.toString());
-//		rddToString
-//				.saveAsTextFile("/user/lhing/aaaaaaaaaaaaaaaaaaaaaaa0000000000000000");
+		// JavaRDD<String> rddToString = rddHgtData.map(data ->
+		// data.toString());
+		// rddToString
+		// .saveAsTextFile("/user/lhing/aaaaaaaaaaaaaaaaaaaaaaa0000000000000000");
 
 	}
 
 	private static Map<String, Long> reduceMap(Map<String, Long> m1,
 			Map<String, Long> m2) {
-		
-		m1.forEach((key, value)->{
-			if(checkSuperior(m2, key, value))
+
+		m1.forEach((key, value) -> {
+			if (checkSuperior(m2, key, value))
 				m2.put(key, value);
 		});
-		
+
 		return m2;
 	}
 
 	public static Map<String, Long> hgtConvertToClass(String filePath,
 			PortableDataStream file) {
 		filePath = filePath.substring(filePath.length() - 11);
-		System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<< debut fonction >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		System.out
+				.println("<<<<<<<<<<<<<<<<<<<<<<<<< debut fonction >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
 		Map<String, Long> mapPixels = new HashMap<String, Long>();
 
@@ -78,7 +86,9 @@ public class Main {
 		 */
 		long zoom = 1;
 
-		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FILE PATH : " + filePath);
+		System.out
+				.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FILE PATH : "
+						+ filePath);
 
 		String NS = filePath.substring(0, 1);
 		String WE = filePath.substring(3, 4);
@@ -134,7 +144,8 @@ public class Main {
 
 	private static boolean checkSuperior(Map<String, Long> map, String coord,
 			long altitude) {
-		return !map.containsKey(coord) || map.containsKey(coord) && map.get(coord) < altitude;
+		return !map.containsKey(coord) || map.containsKey(coord)
+				&& map.get(coord) < altitude;
 	}
 
 	private static String getPixelKey(long latitude, long longitude,
