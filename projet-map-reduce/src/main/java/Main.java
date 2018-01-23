@@ -1,3 +1,5 @@
+import io.netty.util.internal.MpscLinkedQueueNode;
+
 import java.io.DataInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,6 +12,8 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.input.PortableDataStream;
+
+import scala.reflect.internal.Trees.Return;
 
 import com.twitter.chill.Tuple2LongLongSerializer;
 
@@ -28,20 +32,25 @@ public class Main {
 		final long ZOOM = new Long(zoom);
 
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
-				.binaryFiles("/dem3_raw/N00E006.hgt");
+				.binaryFiles("/user/raw_data/dem3/*");
 
 		System.out.println("<<<<<<<<<<<<< count rdd : " + rddFiles.count());
 
 		System.out
 				.println("<<<<<<<<<<<<<<<<<<<<<<<< avant >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		JavaRDD<Map<String, Long>> rddHgtData = rddFiles
-				.map((tuple) -> hgtConvertToClass(tuple._1, tuple._2, ZOOM));
-		System.out.println("<<<<<<<<<<<<< count rdd : " + rddHgtData.count());
-		List<Map<String, Long>> liste = rddHgtData.collect();
-		System.out.println("<<<<<<<<<<<<< taille liste : " + liste.size());
-		System.out.println("<<<<<<<<<<<<< taille map : " + liste.get(0).size());
-		System.out
-				.println("<<<<<<<<<<<<<<<<<<<<<<<<< apres >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		JavaRDD<Map<String, Long>> rddHgtData = rddFiles.map((tuple) -> {
+			Map<String, Long> mapResult = new HashMap<>();
+			
+			try {
+				mapResult = hgtConvertToClass(tuple._1, tuple._2, ZOOM);
+			} catch (NumberFormatException e) {
+
+				System.err.println("File : " + tuple._1);
+				e.printStackTrace();
+			}
+			
+			return mapResult;
+		});
 
 		Map<String, Long> result = rddHgtData.reduce((Map<String, Long> m1,
 				Map<String, Long> m2) -> reduceMap(m1, m2));
@@ -68,7 +77,9 @@ public class Main {
 	}
 
 	public static Map<String, Long> hgtConvertToClass(String filePath,
-			PortableDataStream file, long zoom) {
+			PortableDataStream file, long zoom) throws NumberFormatException {
+		
+		
 		filePath = filePath.substring(filePath.length() - 11);
 
 		Map<String, Long> mapPixels = new HashMap<String, Long>();
