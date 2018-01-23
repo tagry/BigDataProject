@@ -19,12 +19,12 @@ public class Main {
 
 		SparkConf conf = new SparkConf().setAppName("TP Spark");
 		JavaSparkContext context = new JavaSparkContext(conf);
-		
+
 		long zoom = 1;
-		if(args.length == 1){
+		if (args.length == 1) {
 			zoom = Integer.parseInt(args[0]);
 		}
-		
+
 		final long ZOOM = new Long(zoom);
 
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
@@ -46,9 +46,13 @@ public class Main {
 		Map<String, Long> result = rddHgtData.reduce((Map<String, Long> m1,
 				Map<String, Long> m2) -> reduceMap(m1, m2));
 
-		
-		System.out.println("<<<"+ result.size()+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-		result.forEach((key, value)-> System.out.println(key + " " + value));
+		storeMap(result, ZOOM);
+
+		System.out
+				.println("<<<"
+						+ result.size()
+						+ "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+		result.forEach((key, value) -> System.out.println(key + " " + value));
 
 	}
 
@@ -101,7 +105,8 @@ public class Main {
 
 					long altitude = (buf[0] << 8) | buf[1];
 
-					String pixelKey = getPixelKey(latitude, longitude, j, i, zoom);
+					String pixelKey = getPixelKey(latitude, longitude, j, i,
+							zoom);
 
 					if (checkSuperior(mapPixels, pixelKey, altitude))
 						mapPixels.put(pixelKey, altitude);
@@ -137,4 +142,32 @@ public class Main {
 		return coordPixelX + "-" + coordPixelY;
 	}
 
+	private static void storeMap(Map<String, Long> map, long zoom) {
+		Map<String, Map<String, Long>> mapSplit = splitMap(map, zoom);
+
+		mapSplit.forEach((k, v) -> HBaseConnector.addMap(
+				"magrondin_lhing_tagry", new String("" + zoom), k, v));
+	}
+
+	private static Map<String, Map<String, Long>> splitMap(
+			Map<String, Long> map, long zoom) {
+		Map<String, Map<String, Long>> filesMap = new HashMap<String, Map<String, Long>>();
+
+		map.forEach((k, v) -> {
+			String[] keyTab = k.split("-");
+			int x = Integer.parseInt(keyTab[0]);
+			int y = Integer.parseInt(keyTab[1]);
+
+			String fileKey = x / 1024 + "-" + y / 1024;
+
+			String coordPixelInFile = x % 1024 + "-" + y % 1024;
+
+			if (!filesMap.containsKey(fileKey))
+				filesMap.put(fileKey, new HashMap<String, Long>());
+
+			filesMap.get(fileKey).put(coordPixelInFile, v);
+		});
+
+		return filesMap;
+	}
 }
