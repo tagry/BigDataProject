@@ -1,3 +1,4 @@
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,8 +34,7 @@ public class HBaseConnector {
 	/**
 	 * Create a table
 	 */
-	public static void createTable(String tableName, String[] familys)
-			throws Exception {
+	public static void createTable(String tableName, String[] familys) throws Exception {
 
 		HBaseAdmin admin = new HBaseAdmin(conf);
 		if (admin.tableExists(tableName)) {
@@ -75,63 +75,41 @@ public class HBaseConnector {
 	 *            x-y
 	 * @param xyPixel
 	 *            x-y (1024 x 1024)
-	 * @param value
+	 * @param valueImage
 	 * @throws Exception
 	 */
-	public static void addFileToHBase(String tableName, String coordFileRow,
-			String zoomFamily, byte[] value) throws Exception {
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START00.");
+	public static void addFileToHBase(String tableName, String coordFileRow, String zoomFamily, byte[] valueImage)
+			throws Exception {
 		try {
 			HTable table = new HTable(conf, tableName);
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START11.");
+
 			Put put = new Put(Bytes.toBytes(coordFileRow));
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START22.");
-			put.add(Bytes.toBytes(zoomFamily), Bytes.toBytes(""),value);
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START33.");
+
+			put.add(Bytes.toBytes(zoomFamily), Bytes.toBytes(""), valueImage);
+
 			table.put(put);
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START44.");
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void addMap(String tableName, String coordFileRow,
-			String zoomFamily, Map<String, Long> map) {
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START.");
+	public static void addMap(String tableName, String coordFileRow, String zoomFamily, Map<String, Long> map) {
 
-		String[] coordFile = zoomFamily.split("-");
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START1.");
-		Matrice matriceFile = new Matrice(map, Integer.parseInt(coordFile[0]),
-				Integer.parseInt(coordFile[1]));
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START2.");
+		BufferedImage image = ImageManager.mapToImage(map);
+
 		try {
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START000000.");
-			addFileToHBase(tableName, coordFileRow, zoomFamily, matriceFile.getHighBytes());
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START3.");
+			addFileToHBase(tableName, coordFileRow, zoomFamily, ImageManager.imageToArrayBytes(image));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " ok.");
 	}
 
 	/**
 	 * Delete a row
 	 */
-	public static void delZoomRow(String tableName, String zoomRow)
-			throws IOException {
+	public static void delZoomRow(String tableName, String zoomRow) throws IOException {
 		HTable table = new HTable(conf, tableName);
 		List<Delete> list = new ArrayList<Delete>();
 		Delete del = new Delete(zoomRow.getBytes());
@@ -143,12 +121,11 @@ public class HBaseConnector {
 	/**
 	 * Get a row
 	 */
-	public static Map<String, Long> getOneFile(String tableName,
-			String zoomRow, byte[] fileFamily) throws IOException {
+	public static Map<String, Long> getOneImage(String tableName, String coordFileRow, byte[] zoomFamily) throws IOException {
 		Map<String, Long> map = new HashMap<String, Long>();
 		HTable table = new HTable(conf, tableName);
-		Get get = new Get(zoomRow.getBytes());
-		get.addFamily(fileFamily);
+		Get get = new Get(coordFileRow.getBytes());
+		get.addFamily(zoomFamily);
 		Result rs = table.get(get);
 		for (KeyValue kv : rs.raw()) {
 
@@ -179,11 +156,10 @@ public class HBaseConnector {
 	/*
 	 * public static void test() { try { String tablename = "scores"; String[]
 	 * familys = { "grade", "course" }; System.out.println("ok");
-	 * HBaseConnector.createTable(tablename, familys); System.out.println("ok");
-	 * // add record zkb System.out.println("ok");
-	 * HBaseConnector.addPixel(tablename, "zkb", "grade", "", "5");
-	 * HBaseConnector.addPixel(tablename, "zkb", "course", "", "90");
-	 * HBaseConnector.addPixel(tablename, "zkb", "course", "math", "97");
+	 * HBaseConnector.createTable(tablename, familys); System.out.println("ok"); //
+	 * add record zkb System.out.println("ok"); HBaseConnector.addPixel(tablename,
+	 * "zkb", "grade", "", "5"); HBaseConnector.addPixel(tablename, "zkb", "course",
+	 * "", "90"); HBaseConnector.addPixel(tablename, "zkb", "course", "math", "97");
 	 * HBaseConnector.addPixel(tablename, "zkb", "course", "art", "87");
 	 * System.out.println("ok"); // add record baoniu
 	 * HBaseConnector.addPixel(tablename, "baoniu", "grade", "", "4");
