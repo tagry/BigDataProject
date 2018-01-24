@@ -1,3 +1,4 @@
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,17 +34,18 @@ public class HBaseConnector {
 	/**
 	 * Create a table
 	 */
-	public static void createTable(String tableName, String[] familys)
-			throws Exception {
+	public static void createTable(String tableName, String[] familys) throws Exception {
 
 		HBaseAdmin admin = new HBaseAdmin(conf);
 		if (admin.tableExists(tableName)) {
 			System.out.println("table already exists!");
 		} else {
+			System.out.println("ok");
 			HTableDescriptor tableDesc = new HTableDescriptor(tableName);
 			for (int i = 0; i < familys.length; i++) {
 				tableDesc.addFamily(new HColumnDescriptor(familys[i]));
 			}
+			System.out.println("ok");
 			admin.createTable(tableDesc);
 			System.out.println("create table " + tableName + " ok.");
 		}
@@ -73,73 +75,58 @@ public class HBaseConnector {
 	 *            x-y
 	 * @param xyPixel
 	 *            x-y (1024 x 1024)
-	 * @param value
+	 * @param valueImage
 	 * @throws Exception
 	 */
-	public static void addFileToHBase(String tableName, String coordFileRow,
-			String zoomFamily, byte[] value) throws Exception {
+	public static void addFileToHBase(String tableName, String coordFileRow, String zoomFamily, byte[] valueImage)
+			throws Exception {
 		try {
 			HTable table = new HTable(conf, tableName);
+
 			Put put = new Put(Bytes.toBytes(coordFileRow));
-			// Add the value in the good family and subcolumn
-			put.add(Bytes.toBytes(zoomFamily), Bytes.toBytes(""),value);
+
+			put.add(Bytes.toBytes(zoomFamily), Bytes.toBytes(""), valueImage);
+
 			table.put(put);
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void addMap(String tableName, String coordFileRow,
-			String zoomFamily, Map<String, Long> map) {
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START.");
+	public static void addMap(String tableName, String coordFileRow, String zoomFamily, Map<String, Long> map) {
 
-		String[] coordFile = zoomFamily.split("-");
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START1.");
-		Matrice matriceFile = new Matrice(map, Integer.parseInt(coordFile[0]),
-				Integer.parseInt(coordFile[1]));
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START2.");
+		BufferedImage image = ImageManager.mapToImage(map);
+
 		try {
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START000000.");
-			addFileToHBase(tableName, coordFileRow, zoomFamily, matriceFile.getHighBytes());
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START3.");
+			addFileToHBase(tableName, coordFileRow, zoomFamily, ImageManager.imageToArrayBytes(image));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " ok.");
 	}
 
 	/**
 	 * Delete a row
 	 */
-	public static void delFileRow(String tableName, String fileRow)
-			throws IOException {
+	public static void delZoomRow(String tableName, String zoomRow) throws IOException {
 		HTable table = new HTable(conf, tableName);
 		List<Delete> list = new ArrayList<Delete>();
-		Delete del = new Delete(fileRow.getBytes());
+		Delete del = new Delete(zoomRow.getBytes());
+
 		list.add(del);
 		table.delete(list);
-		System.out.println("del record " + fileRow + " ok.");
+		System.out.println("del recored " + zoomRow + " ok.");
 	}
-	
-	
 
 	/**
 	 * Get a row
 	 */
-	public static Map<String, Long> getOneFile(String tableName,
-			String zoomRow, byte[] fileFamily) throws IOException {
+	public static Map<String, Long> getOneImage(String tableName, String coordFileRow, byte[] zoomFamily) throws IOException {
 		Map<String, Long> map = new HashMap<String, Long>();
 		HTable table = new HTable(conf, tableName);
-		Get get = new Get(zoomRow.getBytes());
-		get.addFamily(fileFamily);
+		Get get = new Get(coordFileRow.getBytes());
+		get.addFamily(zoomFamily);
 		Result rs = table.get(get);
 		for (KeyValue kv : rs.raw()) {
 
@@ -159,9 +146,12 @@ public class HBaseConnector {
 			if (!admin.tableExists(tableName))
 				createTable(tableName, familys);
 
+			delZoomRow(tableName, new String(zoom + ""));
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
 }
