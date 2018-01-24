@@ -82,7 +82,7 @@ public class Matrice {
 		for (int i = 0; i < SIZE_BLOCK_SIDE; i++) {
 			for (int j = 0; j < SIZE_BLOCK_SIDE; j++) {
 				s += matrice[i][j];
-				System.out.println("blabla");
+				System.out.println("blabla : " + i + " , " + j);
 				if (j != SIZE_BLOCK_SIDE - 1)
 					s += ",";
 			}
