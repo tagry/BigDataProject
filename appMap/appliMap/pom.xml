@@ -35,4 +35,23 @@
 			<version>2.0.1</version>
 		</dependency>
 	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<archive>
+						<manifest>
+							<mainClass>mapprinter.MapPrinter</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

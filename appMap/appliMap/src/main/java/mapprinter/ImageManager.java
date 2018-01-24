@@ -1,9 +1,7 @@
-package mapprinter;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -31,10 +29,19 @@ public class ImageManager {
 
 	public static byte[] imageToArrayBytes(BufferedImage image) {
 		// get DataBufferBytes from Raster
-		WritableRaster raster = image.getRaster();
-		DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
+		//WritableRaster raster = image.getRaster();
+		//DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
 
-		return (data.getData());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+		ImageIO.write(image, "jpg", baos);
+		} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		}
+
+
+		return baos.toByteArray();//(data.getData());
 	}
 
 	public static BufferedImage arrayByteToImage(byte[] imageData) {

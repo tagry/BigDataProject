@@ -31,6 +31,9 @@ public class Main {
 		/**
 		 * RDD containing all hgt files
 		 */
+		
+		System.out.println("<<<<<<<<<<<<< SEARCH FILES >>>>>>>>>>>>>>>>>");
+		
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
 				.binaryFiles("/user/tagry/hgtData/*");
 
@@ -40,22 +43,27 @@ public class Main {
 		 * RDD of Maps with: coordinates of pixel as String ("x-y") highest
 		 * altitude of pixel as value Each map corresponding to a file.hgt
 		 */
+		System.out.println("<<<<<<<<<<<<< START MAP >>>>>>>>>>>>>>>>>");
 		JavaRDD<Map<String, Long>> rddHgtData = rddFiles
 				.map((tuple) -> hgtConvertToClass(tuple._1, tuple._2, ZOOM));
+		System.out.println("<<<<<<<<<<<<< MAP FINISHED >>>>>>>>>>>>>>>>>");
 
 		/**
 		 * Merge of all maps
 		 */
+		System.out.println("<<<<<<<<<<<<< START REDUCE >>>>>>>>>>>>>>>>>");
 		Map<String, Long> result = rddHgtData.reduce((Map<String, Long> m1,
 				Map<String, Long> m2) -> reduceMap(m1, m2));
-
+		System.out.println("<<<<<<<<<<<<< REDUCE FINISHED >>>>>>>>>>>>>>>>>");
 		/**
 		 * Splits the final map into several maps according to the zoom and stores them into HBase
 		 */
+		System.out.println("<<<<<<<<<<<<< START STORAGE >>>>>>>>>>>>>>>>>");
 		storeMap(result, ZOOM);
-
+		System.out.println("<<<<<<<<<<<<< STORAGE DONE >>>>>>>>>>>>>>>>>");
+		
 		System.out.println("<<<" + result.size() + "<<<<<<<<<<<<<<<<<<<<<<");
-
+		
 		context.close();
 	}
 	
@@ -175,8 +183,8 @@ public class Main {
 
 		Map<String, Map<String, Long>> mapSplit = splitMap(map, zoom);
 
-		mapSplit.forEach((k, v) -> HBaseConnector.addMap(tableName, new String(
-				"" + zoom), k, v));
+		mapSplit.forEach((k, v) -> HBaseConnector.addMap(tableName, k, new String(
+				"" + zoom), v));
 	}
 
 	private static Map<String, Map<String, Long>> splitMap(
