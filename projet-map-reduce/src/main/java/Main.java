@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -81,6 +83,12 @@ public class Main {
 		
 		
 		filePath = filePath.substring(filePath.length() - 11);
+		
+		Pattern pattern = Pattern.compile("(N|S)\\d{2}(W|E)\\d{3}.hgt\\z");
+		Matcher matcher = pattern.matcher(filePath);
+		
+		if(!matcher.find())
+			return new HashMap<String, Long>();
 
 		Map<String, Long> mapPixels = new HashMap<String, Long>();
 
