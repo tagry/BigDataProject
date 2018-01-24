@@ -154,30 +154,4 @@ public class HBaseConnector {
 		}
 	}
 
-	/*
-	 * public static void test() { try { String tablename = "scores"; String[]
-	 * familys = { "grade", "course" }; System.out.println("ok");
-	 * HBaseConnector.createTable(tablename, familys); System.out.println("ok"); //
-	 * add record zkb System.out.println("ok"); HBaseConnector.addPixel(tablename,
-	 * "zkb", "grade", "", "5"); HBaseConnector.addPixel(tablename, "zkb", "course",
-	 * "", "90"); HBaseConnector.addPixel(tablename, "zkb", "course", "math", "97");
-	 * HBaseConnector.addPixel(tablename, "zkb", "course", "art", "87");
-	 * System.out.println("ok"); // add record baoniu
-	 * HBaseConnector.addPixel(tablename, "baoniu", "grade", "", "4");
-	 * HBaseConnector.addPixel(tablename, "baoniu", "course", "math", "89");
-	 * 
-	 * System.out.println("===========get one record========");
-	 * HBaseConnector.getOneRecord(tablename, "zkb");
-	 * 
-	 * System.out.println("===========show all record========");
-	 * HBaseConnector.getAllRecord(tablename);
-	 * 
-	 * System.out.println("===========del one record========");
-	 * HBaseConnector.delZoomRow(tablename, "baoniu");
-	 * HBaseConnector.getAllRecord(tablename);
-	 * 
-	 * System.out.println("===========show all record========");
-	 * HBaseConnector.getAllRecord(tablename); } catch (Exception e) {
-	 * e.printStackTrace(); } }
-	 */
 }
