@@ -40,12 +40,10 @@ public class HBaseConnector {
 		if (admin.tableExists(tableName)) {
 			System.out.println("table already exists!");
 		} else {
-			System.out.println("ok");
 			HTableDescriptor tableDesc = new HTableDescriptor(tableName);
 			for (int i = 0; i < familys.length; i++) {
 				tableDesc.addFamily(new HColumnDescriptor(familys[i]));
 			}
-			System.out.println("ok");
 			admin.createTable(tableDesc);
 			System.out.println("create table " + tableName + " ok.");
 		}
@@ -80,21 +78,12 @@ public class HBaseConnector {
 	 */
 	public static void addFileToHBase(String tableName, String coordFileRow,
 			String zoomFamily, byte[] value) throws Exception {
-		System.out.println("add Map " + coordFileRow + " to table " + tableName
-				+ " START00.");
 		try {
 			HTable table = new HTable(conf, tableName);
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START11.");
 			Put put = new Put(Bytes.toBytes(coordFileRow));
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START22.");
+			// Add the value in the good family and subcolumn
 			put.add(Bytes.toBytes(zoomFamily), Bytes.toBytes(""),value);
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START33.");
 			table.put(put);
-			System.out.println("add Map " + coordFileRow + " to table " + tableName
-					+ " START44.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -130,15 +119,17 @@ public class HBaseConnector {
 	/**
 	 * Delete a row
 	 */
-	public static void delZoomRow(String tableName, String zoomRow)
+	public static void delFileRow(String tableName, String fileRow)
 			throws IOException {
 		HTable table = new HTable(conf, tableName);
 		List<Delete> list = new ArrayList<Delete>();
-		Delete del = new Delete(zoomRow.getBytes());
+		Delete del = new Delete(fileRow.getBytes());
 		list.add(del);
 		table.delete(list);
-		System.out.println("del recored " + zoomRow + " ok.");
+		System.out.println("del record " + fileRow + " ok.");
 	}
+	
+	
 
 	/**
 	 * Get a row
@@ -168,39 +159,9 @@ public class HBaseConnector {
 			if (!admin.tableExists(tableName))
 				createTable(tableName, familys);
 
-			delZoomRow(tableName, new String(zoom + ""));
-
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
-	/*
-	 * public static void test() { try { String tablename = "scores"; String[]
-	 * familys = { "grade", "course" }; System.out.println("ok");
-	 * HBaseConnector.createTable(tablename, familys); System.out.println("ok");
-	 * // add record zkb System.out.println("ok");
-	 * HBaseConnector.addPixel(tablename, "zkb", "grade", "", "5");
-	 * HBaseConnector.addPixel(tablename, "zkb", "course", "", "90");
-	 * HBaseConnector.addPixel(tablename, "zkb", "course", "math", "97");
-	 * HBaseConnector.addPixel(tablename, "zkb", "course", "art", "87");
-	 * System.out.println("ok"); // add record baoniu
-	 * HBaseConnector.addPixel(tablename, "baoniu", "grade", "", "4");
-	 * HBaseConnector.addPixel(tablename, "baoniu", "course", "math", "89");
-	 * 
-	 * System.out.println("===========get one record========");
-	 * HBaseConnector.getOneRecord(tablename, "zkb");
-	 * 
-	 * System.out.println("===========show all record========");
-	 * HBaseConnector.getAllRecord(tablename);
-	 * 
-	 * System.out.println("===========del one record========");
-	 * HBaseConnector.delZoomRow(tablename, "baoniu");
-	 * HBaseConnector.getAllRecord(tablename);
-	 * 
-	 * System.out.println("===========show all record========");
-	 * HBaseConnector.getAllRecord(tablename); } catch (Exception e) {
-	 * e.printStackTrace(); } }
-	 */
 }
