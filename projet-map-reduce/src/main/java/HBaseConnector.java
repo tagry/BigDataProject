@@ -113,6 +113,7 @@ public class HBaseConnector {
 		HTable table = new HTable(conf, tableName);
 		List<Delete> list = new ArrayList<Delete>();
 		Delete del = new Delete(zoomRow.getBytes());
+
 		list.add(del);
 		table.delete(list);
 		System.out.println("del recored " + zoomRow + " ok.");
