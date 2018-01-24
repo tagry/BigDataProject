@@ -34,25 +34,14 @@ public class Main {
 		final long ZOOM = new Long(zoom);
 
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
-				.binaryFiles("/user/raw_data/dem3/*");
+				.binaryFiles("/user/tagry/hgtData/*");
 
 		System.out.println("<<<<<<<<<<<<< count rdd : " + rddFiles.count());
 
 		System.out
 				.println("<<<<<<<<<<<<<<<<<<<<<<<< avant >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		JavaRDD<Map<String, Long>> rddHgtData = rddFiles.map((tuple) -> {
-			Map<String, Long> mapResult = new HashMap<>();
-			
-			try {
-				mapResult = hgtConvertToClass(tuple._1, tuple._2, ZOOM);
-			} catch (NumberFormatException e) {
-
-				System.err.println("File : " + tuple._1);
-				e.printStackTrace();
-			}
-			
-			return mapResult;
-		});
+		JavaRDD<Map<String, Long>> rddHgtData = rddFiles
+				.map((tuple) -> hgtConvertToClass(tuple._1, tuple._2, ZOOM));
 
 		Map<String, Long> result = rddHgtData.reduce((Map<String, Long> m1,
 				Map<String, Long> m2) -> reduceMap(m1, m2));
@@ -79,15 +68,14 @@ public class Main {
 	}
 
 	public static Map<String, Long> hgtConvertToClass(String filePath,
-			PortableDataStream file, long zoom) throws NumberFormatException {
-		
-		
+			PortableDataStream file, long zoom) {
+
 		filePath = filePath.substring(filePath.length() - 11);
-		
+
 		Pattern pattern = Pattern.compile("(N|S)\\d{2}(W|E)\\d{3}.hgt\\z");
 		Matcher matcher = pattern.matcher(filePath);
-		
-		if(!matcher.find())
+
+		if (!matcher.find())
 			return new HashMap<String, Long>();
 
 		Map<String, Long> mapPixels = new HashMap<String, Long>();
@@ -164,23 +152,18 @@ public class Main {
 	}
 
 	private static String[] generateFamilies(int maxZoom) {
-		int maxFilesBySide = (int) Math.pow(2, maxZoom);
 
-		String[] result = new String[maxFilesBySide * maxFilesBySide];
+		String[] result = new String[maxZoom];
 
-		int c = 0;
+		for (int i = 0; i < maxZoom; i++)
+			result[i] = i + "";
 
-		for (int i = 0; i < maxFilesBySide; i++)
-			for (int j = 0; j < maxFilesBySide; j++) {
-				result[c] = i + "-" + j;
-				c++;
-			}
 		return result;
 
 	}
 
 	private static void storeMap(Map<String, Long> map, long zoom) {
-		String tableName = "magrondin_lhing_tagry";
+		String tableName = "maegrondin_lhing_tagry";
 		int maxZoom = 5;
 
 		HBaseConnector.initHBase(tableName, generateFamilies(maxZoom), zoom);

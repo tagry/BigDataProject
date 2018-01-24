@@ -19,8 +19,6 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import scala.reflect.api.Trees.IfApi;
-
 public class HBaseConnector {
 	private static Configuration conf = null;
 	/**
@@ -72,39 +70,61 @@ public class HBaseConnector {
 	/**
 	 * 
 	 * @param tableName
-	 * @param zoomRow
-	 * @param fileFamily
+	 * @param coordFileRow
+	 * @param zoomFamily
 	 *            x-y
 	 * @param xyPixel
 	 *            x-y (1024 x 1024)
 	 * @param value
 	 * @throws Exception
 	 */
-	public static void addPixel(String tableName, String zoomRow,
-			String fileFamily, String xyPixel, String value) throws Exception {
+	public static void addFileToHBase(String tableName, String coordFileRow,
+			String zoomFamily, byte[] value) throws Exception {
+		System.out.println("add Map " + coordFileRow + " to table " + tableName
+				+ " START00.");
 		try {
 			HTable table = new HTable(conf, tableName);
-			Put put = new Put(Bytes.toBytes(zoomRow));
-			put.add(Bytes.toBytes(fileFamily), Bytes.toBytes(xyPixel),
-					Bytes.toBytes(value));
+			System.out.println("add Map " + coordFileRow + " to table " + tableName
+					+ " START11.");
+			Put put = new Put(Bytes.toBytes(coordFileRow));
+			System.out.println("add Map " + coordFileRow + " to table " + tableName
+					+ " START22.");
+			put.add(Bytes.toBytes(zoomFamily), Bytes.toBytes(""),value);
+			System.out.println("add Map " + coordFileRow + " to table " + tableName
+					+ " START33.");
 			table.put(put);
-			System.out.println("insert pixel " + zoomRow + " to table "
-					+ tableName + " ok.");
+			System.out.println("add Map " + coordFileRow + " to table " + tableName
+					+ " START44.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static void addMap(String tableName, String zoomRow,
-			String fileFamily, Map<String, Long> map) {
-		map.forEach((k, v) -> {
-			try {
-				addPixel(tableName, zoomRow, fileFamily, k, v.toString());
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
+	public static void addMap(String tableName, String coordFileRow,
+			String zoomFamily, Map<String, Long> map) {
+		System.out.println("add Map " + coordFileRow + " to table " + tableName
+				+ " START.");
+
+		String[] coordFile = zoomFamily.split("-");
+		System.out.println("add Map " + coordFileRow + " to table " + tableName
+				+ " START1.");
+		Matrice matriceFile = new Matrice(map, Integer.parseInt(coordFile[0]),
+				Integer.parseInt(coordFile[1]));
+		System.out.println("add Map " + coordFileRow + " to table " + tableName
+				+ " START2.");
+		try {
+			System.out.println("add Map " + coordFileRow + " to table " + tableName
+					+ " START000000.");
+			addFileToHBase(tableName, coordFileRow, zoomFamily, matriceFile.getHighBytes());
+			System.out.println("add Map " + coordFileRow + " to table " + tableName
+					+ " START3.");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		System.out.println("add Map " + coordFileRow + " to table " + tableName
+				+ " ok.");
 	}
 
 	/**
