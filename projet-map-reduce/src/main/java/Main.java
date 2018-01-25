@@ -35,7 +35,7 @@ public class Main {
 		System.out.println("<<<<<<<<<<<<< SEARCH FILES >>>>>>>>>>>>>>>>>");
 		
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
-				.binaryFiles("/dem3_raw/*"); // /user/raw_data/dem3/* /user/tagry/hgtData/*
+				.binaryFiles("/user/raw_data/dem3/*"); // /user/raw_data/dem3/* /user/tagry/hgtData/* /dem3_raw/*
 
 		System.out.println("<<<<<<<<<<<<< count rdd : " + rddFiles.count());
 
@@ -63,6 +63,7 @@ public class Main {
 		System.out.println("<<<<<<<<<<<<< STORAGE DONE >>>>>>>>>>>>>>>>>");
 		
 		System.out.println("<<<" + result.size() + "<<<<<<<<<<<<<<<<<<<<<<");
+		
 		
 		context.close();
 	}
@@ -175,7 +176,7 @@ public class Main {
 
 	
 	private static void storeMap(Map<String, Long> map, long zoom) {
-		String tableName = "maegrondin_lhing_tagry";
+		String tableName = "maegrondin_lhing_tagry2";
 		int maxZoom = 5;
 
 		// Create table if it does not exist
@@ -185,6 +186,21 @@ public class Main {
 
 		mapSplit.forEach((k, v) -> HBaseConnector.addMap(tableName, k, new String(
 				"" + zoom), v));
+		
+		
+		int nbImagePerSide = (int) Math.pow(2, zoom); 
+		
+		for(int i = 0 ; i <  nbImagePerSide; i ++ )
+			for(int j = 0 ; j < nbImagePerSide ; j++){
+				String key = j + "-" + i;
+				if(mapSplit.containsKey(key))
+					HBaseConnector.addMap(tableName, key, new String(
+							"" + zoom), mapSplit.get(key));
+				else
+					HBaseConnector.addMap(tableName, key, new String(
+							"" + zoom), new HashMap<String, Long>());
+			}
+				
 	}
 
 	private static Map<String, Map<String, Long>> splitMap(

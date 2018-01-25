@@ -146,7 +146,7 @@ public class HBaseConnector {
 			if (!admin.tableExists(tableName))
 				createTable(tableName, familys);
 
-			delZoomRow(tableName, new String(zoom + ""));
+			//delZoomRow(tableName, new String(zoom + ""));
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
