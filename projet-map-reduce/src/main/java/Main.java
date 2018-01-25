@@ -35,7 +35,7 @@ public class Main {
 		System.out.println("<<<<<<<<<<<<< SEARCH FILES >>>>>>>>>>>>>>>>>");
 		
 		JavaPairRDD<String, PortableDataStream> rddFiles = context
-				.binaryFiles("/user/tagry/hgtData/*");
+				.binaryFiles("/dem3_raw/*"); // /user/raw_data/dem3/* /user/tagry/hgtData/*
 
 		System.out.println("<<<<<<<<<<<<< count rdd : " + rddFiles.count());
 
