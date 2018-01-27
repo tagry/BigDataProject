@@ -19,7 +19,7 @@ public class Main {
 	public static void main(String[] args) {
 		setParameters(args);
 		
-		JobManager job = new JobManager(path, zoom);
+		JobManager job = new JobManager(path, new Integer((int) zoom));
 		Map<String, Map<String, Long>> result = job.startJob();
 
 		HBaseManager storageManager = new HBaseManager(tableName);
