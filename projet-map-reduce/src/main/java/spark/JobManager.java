@@ -20,9 +20,9 @@ import org.apache.spark.input.PortableDataStream;
  * @author maegrondin,lhing,tagry
  *
  */
-public class JobManager {
-	private final SparkConf conf = new SparkConf().setAppName("TP Spark");
-	private final JavaSparkContext context = new JavaSparkContext(conf);
+public class JobManager{
+	private final SparkConf conf;
+	private final JavaSparkContext context;
 
 	private final int PIXELS_BY_IMAGE_SIDE = 1024;
 	private final int DATA_BY_FILE_SIDE = 1201;
@@ -30,7 +30,10 @@ public class JobManager {
 	private final long zoom;
 	private final String filesPath;
 
-	public JobManager(String filesPath, long zoom) {
+	public JobManager(String filesPath, long zoom,SparkConf conf, JavaSparkContext context) {
+		this.conf = conf;
+		this.context = context;
+		
 		this.filesPath = filesPath;
 		this.zoom = zoom;
 		System.out.println("<<<<<<<<<<<<< JOB CREATED ZOOM " + this.zoom + ">>>>>>>>>>>>>>>>>");

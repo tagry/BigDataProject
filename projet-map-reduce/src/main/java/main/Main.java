@@ -1,6 +1,9 @@
 package main;
 import java.util.Map;
 
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
+
 import hbase.HBaseManager;
 import spark.JobManager;
 
@@ -10,6 +13,8 @@ import spark.JobManager;
  */
 public class Main {
 	private static long zoom = 0;
+	private final static SparkConf conf = new SparkConf().setAppName("TP Spark");
+	private final static JavaSparkContext context = new JavaSparkContext(conf);
 
 	// /user/raw_data/dem3/* /user/tagry/hgtData/* /dem3_raw/*
 	private static String path = "/user/raw_data/dem3/*";
@@ -19,7 +24,7 @@ public class Main {
 	public static void main(String[] args) {
 		setParameters(args);
 		
-		JobManager job = new JobManager(path, new Integer((int) zoom));
+		JobManager job = new JobManager(path, zoom,conf, context);
 		Map<String, Map<String, Long>> result = job.startJob();
 
 		HBaseManager storageManager = new HBaseManager(tableName);
