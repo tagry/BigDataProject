@@ -1,15 +1,35 @@
+package hbase;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-public class ImageManager {
+/**
+ * Image factory to array byte data or BufferedImage
+ * @author maegrondin,lhing,tagry
+ *
+ */
+public class ImageFactory {
 	private static final int IMAGE_SIZE = 1024;
+	
+	
+	/**
+	 * Get the image in array bytes format from map
+	 * @param map
+	 * @return image in array bytes format
+	 */
+	public static byte[] mapToArrayBytes(Map<String, Long> map) {
+		return imageToArrayBytes(mapToImage(map));
+	}
 
+	/**
+	 * Get the BufferedImage from map
+	 * @param map
+	 * @return Image
+	 */
 	public static BufferedImage mapToImage(Map<String, Long> map) {
 		BufferedImage image = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE,
 				BufferedImage.TYPE_INT_RGB);
@@ -26,14 +46,13 @@ public class ImageManager {
 
 		return image;
 
-	}
-	
+	}	
 
-	public static byte[] imageToArrayBytes(BufferedImage image) {
-		// get DataBufferBytes from Raster
-		// WritableRaster raster = image.getRaster();
-		// DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-
+	/**
+	 * @param image
+	 * @return
+	 */
+	private static byte[] imageToArrayBytes(BufferedImage image) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(IMAGE_SIZE*IMAGE_SIZE);
 		byte[] imgBytes = null;
 		
@@ -53,17 +72,11 @@ public class ImageManager {
 	}
 	
 
-	public static BufferedImage arrayByteToImage(byte[] imageData) {
-		ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
-		try {
-			return ImageIO.read(bais);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	
-
+	/**
+	 * Choice the color from the altitude
+	 * @param altitude
+	 * @return pixel color
+	 */
 	private static int getRgbColorFromAltitude(long altitude) {
 		int rgbColor;
 
