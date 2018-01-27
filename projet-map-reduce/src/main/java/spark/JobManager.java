@@ -20,35 +20,22 @@ import org.apache.spark.input.PortableDataStream;
  * @author maegrondin,lhing,tagry
  *
  */
-public class JobManager{
-	private final SparkConf conf;
-	private final JavaSparkContext context;
-
+public class JobManager {
 	private final int PIXELS_BY_IMAGE_SIDE = 1024;
 	private final int DATA_BY_FILE_SIDE = 1201;
 
 	private final long zoom;
 	private final String filesPath;
 
-	public JobManager(String filesPath, long zoom,SparkConf conf, JavaSparkContext context) {
-		this.conf = conf;
-		this.context = context;
-		
+	public JobManager(String filesPath, long zoom) {
 		this.filesPath = filesPath;
 		this.zoom = zoom;
 		System.out.println("<<<<<<<<<<<<< JOB CREATED ZOOM " + this.zoom + ">>>>>>>>>>>>>>>>>");
 	}
 
 	/**
-	 * Close the spark context
-	 */
-	public void destroy() {
-		this.context.close();
-		System.out.println("<<<<<<<<<<<<< JOB CLOSED ZOOM " + this.zoom + ">>>>>>>>>>>>>>>>>");
-	}
-
-	/**
 	 * Start the job
+	 * 
 	 * @return the job result
 	 */
 	public Map<String, Map<String, Long>> startJob() {
@@ -66,7 +53,7 @@ public class JobManager{
 	private JavaPairRDD<String, PortableDataStream> searchFiles() {
 		System.out.println("<<<<<<<<<<<<< START SEARCH FILES >>>>>>>>>>>>>>>>>");
 
-		JavaPairRDD<String, PortableDataStream> rddFiles = context.binaryFiles(filesPath);
+		JavaPairRDD<String, PortableDataStream> rddFiles = Spark.context.binaryFiles(filesPath);
 
 		System.out.println("<<<<<<<<<<<<< SEARCH FILES FINISHED >>>>>>>>>>>>>>>>>");
 
@@ -106,6 +93,7 @@ public class JobManager{
 
 	/**
 	 * Use in the aggregate to merge files maps to final maps
+	 * 
 	 * @param finalForm
 	 * @param initialForm
 	 * @return
@@ -138,6 +126,7 @@ public class JobManager{
 
 	/**
 	 * Use in the aggregate to merge final maps
+	 * 
 	 * @param finalForm1
 	 * @param finalForm2
 	 * @return
@@ -156,9 +145,9 @@ public class JobManager{
 		return finalForm2;
 	}
 
-	
 	/**
 	 * Merge 2 maps with mergingPredicat property
+	 * 
 	 * @param m1
 	 * @param m2
 	 * @return
@@ -179,8 +168,11 @@ public class JobManager{
 
 	/**
 	 * Converts file to map
-	 * @param filePath use to know latitude and longitude
-	 * @param file hgt file
+	 * 
+	 * @param filePath
+	 *            use to know latitude and longitude
+	 * @param file
+	 *            hgt file
 	 * @param zoom
 	 * @return
 	 */
@@ -252,9 +244,12 @@ public class JobManager{
 
 	/**
 	 * Use to select the highest altitude in a pixel
+	 * 
 	 * @param map
-	 * @param coord pixel coordinate
-	 * @param altitude altitude from the other map
+	 * @param coord
+	 *            pixel coordinate
+	 * @param altitude
+	 *            altitude from the other map
 	 * @return True if the value need to be update
 	 */
 	private boolean mergingPredicat(Map<String, Long> map, String coord, long altitude) {
