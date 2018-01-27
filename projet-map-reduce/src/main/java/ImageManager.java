@@ -69,10 +69,20 @@ public class ImageManager {
 
 		if (altitude <= 0)
 			rgbColor = Color.BLUE.getRGB();
-		else if (altitude < 2000)
-			rgbColor = Color.GREEN.getRGB();
-		else if (altitude < 3000)
-			rgbColor = Color.YELLOW.getRGB();
+		else if(altitude <= 150)
+			rgbColor = new Color(76,129,41,255).getRGB();
+		else if(altitude <= 300)
+			rgbColor = new Color(193,201,80,255).getRGB();
+		else if(altitude <= 500)
+			rgbColor = new Color(234,191,76,255).getRGB();
+		else if(altitude <= 1000)
+			rgbColor = new Color(227,141,38,255).getRGB();
+		else if(altitude <= 1500)
+			rgbColor = new Color(217,94,14,255).getRGB();
+		else if(altitude <= 3000)
+			rgbColor = new Color(128,46,6,255).getRGB();
+		else if(altitude <= 4000)
+			rgbColor = new Color(192,192,192,255).getRGB();
 		else
 			rgbColor = Color.WHITE.getRGB();
 

@@ -155,13 +155,17 @@ public class Main {
 	private static Map<String, Long> reduceMap(Map<String, Long> m1,
 			Map<String, Long> m2) {
 
-		System.out.println("SIZE MAP : " + m2.size());
+		try{
 		m1.forEach((key, value) -> {
 			if (checkSuperior(m2, key, value))
 				m2.put(key, value);
 		});
+		}
+		catch(OutOfMemoryError e){
+			System.out.println("<<<<<<<<<<<<<<<<<<<<<<< ERROR : " + m2.size());
+		}
 
-		System.out.println("SIZE MAP OUT : " + m2.size());
+		
 
 		return m2;
 	}
