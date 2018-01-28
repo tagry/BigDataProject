@@ -21,36 +21,16 @@ import org.apache.spark.input.PortableDataStream;
  *
  */
 public class JobManager {
-	private final int PIXELS_BY_IMAGE_SIDE = 1024;
-	private final int DATA_BY_FILE_SIDE = 1201;
+	private final static int PIXELS_BY_IMAGE_SIDE = 1024;
+	private final static int DATA_BY_FILE_SIDE = 1201;
 
-	private final long zoom;
-	private final String filesPath;
-
-	public JobManager(String filesPath, long zoom) {
-		this.filesPath = filesPath;
-		this.zoom = zoom;
-		System.out.println("<<<<<<<<<<<<< JOB CREATED ZOOM " + this.zoom + ">>>>>>>>>>>>>>>>>");
-	}
-
-	/**
-	 * Start the job
-	 * 
-	 * @return the job result
-	 */
-	public Map<String, Map<String, Long>> startJob() {
-		JavaPairRDD<String, PortableDataStream> rddFiles = searchFiles();
-		JavaRDD<Map<String, Long>> rddMap = filesToMaps(rddFiles);
-
-		return aggregatePixelsMaps(rddMap);
-	}
 
 	/**
 	 * RDD containing all hgt files
 	 * 
 	 * @return (filesPath, files)
 	 */
-	private JavaPairRDD<String, PortableDataStream> searchFiles() {
+	public static JavaPairRDD<String, PortableDataStream> searchFiles(String filesPath, long zoom) {
 		System.out.println("<<<<<<<<<<<<< START SEARCH FILES >>>>>>>>>>>>>>>>>");
 
 		JavaPairRDD<String, PortableDataStream> rddFiles = Spark.context.binaryFiles(filesPath);
@@ -68,7 +48,7 @@ public class JobManager {
 	 * @return Maps with: coordinates of pixel as String ("x-y") highest altitude
 	 * 
 	 */
-	private JavaRDD<Map<String, Long>> filesToMaps(JavaPairRDD<String, PortableDataStream> rddFiles) {
+	public static JavaRDD<Map<String, Long>> filesToMaps(JavaPairRDD<String, PortableDataStream> rddFiles, long zoom) {
 		System.out.println("<<<<<<<<<<<<< START MAP >>>>>>>>>>>>>>>>>");
 		JavaRDD<Map<String, Long>> rddHgtData = rddFiles.map((tuple) -> hgtFormatToMap(tuple._1, tuple._2, zoom));
 		System.out.println("<<<<<<<<<<<<< MAP FINISHED >>>>>>>>>>>>>>>>>");
@@ -80,7 +60,7 @@ public class JobManager {
 	 * @param rddMap
 	 * @return
 	 */
-	private Map<String, Map<String, Long>> aggregatePixelsMaps(JavaRDD<Map<String, Long>> rddMap) {
+	public static Map<String, Map<String, Long>> aggregatePixelsMaps(JavaRDD<Map<String, Long>> rddMap, long zoom) {
 		System.out.println("<<<<<<<<<<<<< START AGREGATE >>>>>>>>>>>>>>>>>");
 		Map<String, Map<String, Long>> init = new HashMap<>();
 		Map<String, Map<String, Long>> result = rddMap.aggregate(init,
@@ -98,7 +78,7 @@ public class JobManager {
 	 * @param initialForm
 	 * @return
 	 */
-	private Map<String, Map<String, Long>> addPixelsToMapImages(Map<String, Map<String, Long>> finalForm,
+	private static Map<String, Map<String, Long>> addPixelsToMapImages(Map<String, Map<String, Long>> finalForm,
 			Map<String, Long> initialForm) {
 
 		initialForm.forEach((k, v) -> {
@@ -131,7 +111,7 @@ public class JobManager {
 	 * @param finalForm2
 	 * @return
 	 */
-	private Map<String, Map<String, Long>> mergeFinalForm(Map<String, Map<String, Long>> finalForm1,
+	private static Map<String, Map<String, Long>> mergeFinalForm(Map<String, Map<String, Long>> finalForm1,
 			Map<String, Map<String, Long>> finalForm2) {
 
 		finalForm1.forEach((k, v) -> {
@@ -152,7 +132,7 @@ public class JobManager {
 	 * @param m2
 	 * @return
 	 */
-	private Map<String, Long> reduceMap(Map<String, Long> m1, Map<String, Long> m2) {
+	private static Map<String, Long> reduceMap(Map<String, Long> m1, Map<String, Long> m2) {
 
 		try {
 			m1.forEach((key, value) -> {
@@ -176,7 +156,7 @@ public class JobManager {
 	 * @param zoom
 	 * @return
 	 */
-	private Map<String, Long> hgtFormatToMap(String filePath, PortableDataStream file, long zoom) {
+	private static Map<String, Long> hgtFormatToMap(String filePath, PortableDataStream file, long zoom) {
 
 		filePath = filePath.substring(filePath.length() - 11);
 
@@ -252,7 +232,7 @@ public class JobManager {
 	 *            altitude from the other map
 	 * @return True if the value need to be update
 	 */
-	private boolean mergingPredicat(Map<String, Long> map, String coord, long altitude) {
+	private static boolean mergingPredicat(Map<String, Long> map, String coord, long altitude) {
 		return !map.containsKey(coord) || map.containsKey(coord) && map.get(coord) < altitude;
 	}
 
@@ -264,7 +244,7 @@ public class JobManager {
 	 * @param zoom
 	 * @return The pixel coordinate in the full image
 	 */
-	private String getPixelKey(long latitude, long longitude, long coordX, long coordY, long zoom) {
+	private static String getPixelKey(long latitude, long longitude, long coordX, long coordY, long zoom) {
 		long nbFilesBySide = (long) Math.pow(2, zoom);
 		long nbPixelsBySide = (long) nbFilesBySide * PIXELS_BY_IMAGE_SIDE;
 

@@ -1,13 +1,16 @@
 package main;
+
 import java.util.Map;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.input.PortableDataStream;
 
 import hbase.HBaseManager;
 import spark.JobManager;
+import spark.Spark;
 
 /**
  * @author maegrondin,lhing,tagry
@@ -23,9 +26,11 @@ public class Main {
 
 	public static void main(String[] args) {
 		setParameters(args);
-		
-		JobManager job = new JobManager(path, zoom);
-		Map<String, Map<String, Long>> result = job.startJob();
+
+		JavaPairRDD<String, PortableDataStream> rddFiles = JobManager.searchFiles(path, zoom);
+		JavaRDD<Map<String, Long>> rddMap = JobManager.filesToMaps(rddFiles, zoom);
+
+		Map<String, Map<String, Long>> result = JobManager.aggregatePixelsMaps(rddMap, zoom);
 
 		HBaseManager storageManager = new HBaseManager(tableName);
 		storageManager.storeMap(result, zoom);
